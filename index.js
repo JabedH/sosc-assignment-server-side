@@ -26,11 +26,34 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
-    app.post("/saveUser", async, (req, res) => {
+    const userCollection = client.db("userData").collection("users");
+
+    app.put("/saveUser/:email", async (req, res) => {
+      const email = req.params.email;
       const user = req.body;
-      console.log(user);
-      const result = await userCollection.insertOne(newUser);
-      res.send(result);
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: user,
+      };
+      const result = await userCollection.updateOne(filter, updateDoc, options);
+
+      res.send({ result });
+    });
+    app.get("/allUsers", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const booking = await userCollection.find(query).toArray();
+      res.send(booking);
+    });
+    // update all user
+    app.patch("/alluser/:email", verifyJWT, async (req, res) => {
+      const email = req.query.email;
+      const info = req.body;
+      console.log(info);
+      const filter = { email: email };
+      const allCollection = await userCollection.updateOne(info, filter);
+      res.send(allCollection);
     });
   } finally {
   }
