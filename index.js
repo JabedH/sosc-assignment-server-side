@@ -42,18 +42,24 @@ async function run() {
     });
     app.get("/allUsers", async (req, res) => {
       const email = req.query.email;
+      // const email = req.params.email;
       const query = { email: email };
       const booking = await userCollection.find(query).toArray();
       res.send(booking);
     });
     // update all user
-    app.patch("/alluser/:email", verifyJWT, async (req, res) => {
-      const email = req.query.email;
-      const info = req.body;
-      console.log(info);
+    app.patch("/allUsers/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      console.log(user);
       const filter = { email: email };
-      const allCollection = await userCollection.updateOne(info, filter);
-      res.send(allCollection);
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: user,
+      };
+      const result = await userCollection.updateOne(filter, updateDoc, options);
+
+      res.send(result);
     });
   } finally {
   }
